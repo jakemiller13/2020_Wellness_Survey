@@ -82,20 +82,30 @@ ax.grid(axis = 'y', which = 'both')
 
 for i, v in enumerate(df[['SC_Rating', 'FL_Rating',
                           'Pi_Rating', 'Yo_Rating']].mean()):
-    ax.text(v + 3, i + .25, str(v), color='blue', fontweight='bold')
+    ax.text(i,
+            v + .05,
+            str(round(v, 2)),
+            ha = 'center',
+            fontsize = 15,
+            fontweight = 'bold')
 
+ax.set_title('Average Score per Class', fontsize = 20)
 plt.show()
 
 # Check gym text entries
-print('Gym feedback: {}'.format(df['Gym_Text'].notna().sum()))
+print('Gym feedback count: {}'.format(df['Gym_Text'].notna().sum()))
 
 # Count number of different words used in responses
-
-
-count_vect = CountVectorizer()
-doc_term_matrix = count_vect.fit_transform(df['Gym_Text'].values.astype('U'))
+count_vec = CountVectorizer(stop_words = 'english')
+doc_term_matrix = count_vec.fit_transform(df['Gym_Text'].values.astype('U'))
 print('Number of different words: {}'.format(doc_term_matrix.shape[1]))
 
 # Fit number of different topics
-LDA = LatentDirichletAllocation(n_components = 4)
+LDA = LatentDirichletAllocation(n_components = 3, random_state = 42)
 LDA.fit(doc_term_matrix)
+
+# Check top 10 words for each topic
+for i, topic_num in enumerate(LDA.components_):
+    print('\n--- Topic {} - Top 10 Words ---'.format(i + 1))
+    print([count_vec.get_feature_names()[j]
+           for j in LDA.components_[i].argsort()[-10:]])
