@@ -10,6 +10,9 @@ Created on Sun Mar 15 09:35:29 2020
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.decomposition import LatentDirichletAllocation
+
 
 # Read in data, drop unneccessary columns
 df = pd.read_excel('2020_Wellness_Survey.xlsx', skiprows = [1])
@@ -32,18 +35,27 @@ df.columns = ['Respondent_ID',
               'Gym_Use',
               'Gym_Text']
 
+def print_ratings(df):
+    '''
+    Prints out ratings for each class and step challenge
+    '''
+    print('\n--- Step Challenge Ratings ---\n{}'.format(df['SC_Rating'].
+                                                        value_counts()))
+    print('\n--- Fit Lab Ratings ---\n{}'.format(df['FL_Rating'].
+                                                 value_counts()))
+    print('\n--- Pilates Ratings ---\n{}'.format(df['Pi_Rating'].
+                                                 value_counts()))
+    print('\n--- Yoga Ratings ---\n{}'.format(df['Yo_Rating'].
+                                              value_counts()))
+
 # Check for duplicate respondent IDs
 print('Duplicate IDs: {}'.format(df['Respondent_ID'].duplicated().sum()))
 
-# Look at ratings
-print('\n--- Step Challenge Ratings ---\n{}'.format(df['SC_Rating'].
-                                                    value_counts()))
-print('\n--- Fit Lab Ratings ---\n{}'.format(df['FL_Rating'].
-                                             value_counts()))
-print('\n--- Pilates Ratings ---\n{}'.format(df['Pi_Rating'].
-                                             value_counts()))
-print('\n--- Yoga Ratings ---\n{}'.format(df['Yo_Rating'].
-                                          value_counts()))
+# Check basics of dataframe
+print('Total Responses: {}'.format(len(df)))
+
+# Look at ratings before and after translating text
+print_ratings(df)
 
 # Translate text ratings into numerical - can't cast to int because NaN
 text_to_num = {'I really enjoy them': 5,
@@ -58,6 +70,7 @@ df['Pi_Rating'] = df['Pi_Rating'].apply(lambda x: text_to_num[x]
                                         if x in text_to_num else x)
 df['Yo_Rating'] = df['Yo_Rating'].apply(lambda x: text_to_num[x]
                                         if x in text_to_num else x)
+print_ratings(df)
 
 # Bar plot average ratings
 fig, ax = plt.subplots(figsize = (10, 10))
@@ -72,3 +85,17 @@ for i, v in enumerate(df[['SC_Rating', 'FL_Rating',
     ax.text(v + 3, i + .25, str(v), color='blue', fontweight='bold')
 
 plt.show()
+
+# Check gym text entries
+print('Gym feedback: {}'.format(df['Gym_Text'].notna().sum()))
+
+# Count number of different words used in responses
+
+
+count_vect = CountVectorizer()
+doc_term_matrix = count_vect.fit_transform(df['Gym_Text'].values.astype('U'))
+print('Number of different words: {}'.format(doc_term_matrix.shape[1]))
+
+# Fit number of different topics
+LDA = LatentDirichletAllocation(n_components = 4)
+LDA.fit(doc_term_matrix)
