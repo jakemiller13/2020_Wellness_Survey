@@ -58,7 +58,6 @@ print_ratings(df)
 # Translate text ratings into numerical - can't cast to int because NaN
 def text_to_num(df):
     '''
-
     Parameters
     ----------
     df : input dataframe
@@ -69,18 +68,18 @@ def text_to_num(df):
     altered dataframe
 
     '''
-    text_to_num = {'I really enjoy them': 5,
-                   'Very Satisfied': 5,
-                   'Neutral': 3,
-                   'Dissatisfied': 1}
-    df['SC_Rating'] = df['SC_Rating'].apply(lambda x: text_to_num[x]
-                                            if x in text_to_num else x)
-    df['FL_Rating'] = df['FL_Rating'].apply(lambda x: text_to_num[x]
-                                            if x in text_to_num else x)
-    df['PI_Rating'] = df['PI_Rating'].apply(lambda x: text_to_num[x]
-                                            if x in text_to_num else x)
-    df['YO_Rating'] = df['YO_Rating'].apply(lambda x: text_to_num[x]
-                                            if x in text_to_num else x)
+    text_num_dict = {'I really enjoy them': 5,
+                     'Very Satisfied': 5,
+                     'Neutral': 3,
+                     'Dissatisfied': 1}
+    df['SC_Rating'] = df['SC_Rating'].apply(lambda x: text_num_dict[x]
+                                            if x in text_num_dict else x)
+    df['FL_Rating'] = df['FL_Rating'].apply(lambda x: text_num_dict[x]
+                                            if x in text_num_dict else x)
+    df['PI_Rating'] = df['PI_Rating'].apply(lambda x: text_num_dict[x]
+                                            if x in text_num_dict else x)
+    df['YO_Rating'] = df['YO_Rating'].apply(lambda x: text_num_dict[x]
+                                            if x in text_num_dict else x)
     return df
 
 # Check ratings after translating to numerical
@@ -110,7 +109,6 @@ plt.show()
 # Investigate low ratings (<=2) for Fit Lab, Pilates, Yoga
 def low_scores(df, class_abbrev, score):
     '''
-
     Parameters
     ----------
     df: input dataframe
@@ -126,8 +124,10 @@ def low_scores(df, class_abbrev, score):
     rating_string = class_abbrev + '_Rating'
     text_string = class_abbrev + '_Text'
     print()
-    print(df[df[rating_string] <= score]
-          [[rating_string, text_string]].dropna())
+    low_ratings = df[df[rating_string] <= score]\
+                     [[rating_string, text_string]].dropna()
+    for entry in low_ratings.values:
+        print('Rating: ' + str(entry[0]) + ' | Comment: ' + entry[1])
 
 for i in ['SC', 'FL', 'PI', 'YO']:
     low_scores(df, i, 3)
@@ -164,7 +164,7 @@ def LDA_gym(df):
                for j in LDA.components_[i].argsort()[-10:][::-1]])
 
 # Space is concern. Look for comments on "space", "big", "large", "room"
-def space_analysis(df, class_abbrev, text_list):
+def word_analysis(df, class_abbrev, text_list):
     '''
     Parameters
     ----------
@@ -194,4 +194,5 @@ def space_analysis(df, class_abbrev, text_list):
           format(len(text_ser), df[text_string].notna().sum(), text_list))
 
 LDA_gym(df)
-space_analysis(df, 'Gym', ['space', 'big', 'large', 'room'])
+word_analysis(df, 'Gym', ['space', 'big', 'large', 'room'])
+word_analysis(df, 'Gym', ['vent', 'dirt', 'sweat', 'clean'])
