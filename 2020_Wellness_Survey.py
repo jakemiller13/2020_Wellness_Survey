@@ -124,11 +124,12 @@ def low_scores(df, class_abbrev, score):
     '''
     rating_string = class_abbrev + '_Rating'
     text_string = class_abbrev + '_Text'
-    print('\n--- {} | {} ---'.format(rating_string, text_string))
+    print('{} | {}'.format(rating_string, text_string))
     low_ratings = df[df[rating_string] <= score]\
                      [[rating_string, text_string]].dropna()
     for entry in low_ratings.values:
-        print('Rating: ' + str(entry[0]) + ' | Comment: ' + entry[1])
+        print('Rating: {} | Comment: {}'.format(int(entry[0]), entry[1]))
+    print()
 
 for i in ['SC', 'FL', 'PI', 'YO']:
     low_scores(df, i, 3)
