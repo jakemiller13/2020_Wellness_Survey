@@ -85,6 +85,7 @@ def text_to_num(df):
 # Check ratings after translating to numerical
 df = text_to_num(df)
 print_ratings(df)
+print(df.describe())
 
 # Bar plot average ratings
 fig, ax = plt.subplots()
@@ -123,7 +124,7 @@ def low_scores(df, class_abbrev, score):
     '''
     rating_string = class_abbrev + '_Rating'
     text_string = class_abbrev + '_Text'
-    print('\n{} | {}'.format(rating_string, text_string))
+    print('\n--- {} | {} ---'.format(rating_string, text_string))
     low_ratings = df[df[rating_string] <= score]\
                      [[rating_string, text_string]].dropna()
     for entry in low_ratings.values:
@@ -136,7 +137,7 @@ for i in ['SC', 'FL', 'PI', 'YO']:
 print('\nGym feedback count: {}'.format(df['Gym_Text'].notna().sum()))
 
 # Count number of different words used in responses
-def LDA_gym(df):
+def perform_LDA(df, class_abbrev, num_topics):
     '''
     Parameters
     ----------
@@ -148,13 +149,15 @@ def LDA_gym(df):
     None.
 
     '''
+    text_string = class_abbrev + '_Text'
     count_vec = CountVectorizer(stop_words = 'english')
-    doc_term_matrix = count_vec.fit_transform(df['Gym_Text'].
+    doc_term_matrix = count_vec.fit_transform(df[text_string].
                                               values.astype('U'))
     print('Number of different words: {}'.format(doc_term_matrix.shape[1]))
     
     # Fit number of different topics
-    LDA = LatentDirichletAllocation(n_components = 3, random_state = 42)
+    LDA = LatentDirichletAllocation(n_components = num_topics,
+                                    random_state = 42)
     LDA.fit(doc_term_matrix)
     
     # Check top 10 words in order for each topic
@@ -193,6 +196,6 @@ def word_analysis(df, class_abbrev, text_list):
     print('\n--- {} out of {} comments mention {} ---'.\
           format(len(text_ser), df[text_string].notna().sum(), text_list))
 
-LDA_gym(df)
+perform_LDA(df, 'Gym', 3)
 word_analysis(df, 'Gym', ['space', 'big', 'large', 'room'])
 word_analysis(df, 'Gym', ['vent', 'dirt', 'sweat', 'clean'])
